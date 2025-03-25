@@ -1,0 +1,3 @@
+configparser
+logging
+python-telegram-bot
