@@ -9,7 +9,7 @@ logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 STAFF_USER_IDS = []
-STAFF_USER_IDS = [123456789, 987654321]
+STAFF_USER_IDS = [123456789, 987654321,1619735577]
 ADMIN_USER_IDS = [244268154]
 
 
@@ -19,7 +19,7 @@ class MenuItem:
         self.price = price
 
     def __str__(self):
-        return f"{self.name} - ${self.price:.2f}"
+        return f"{self.name} - {self.price:.2f}грн"
 
 class Order:
     def __init__(self, items: list, orderer_id: int):
@@ -32,13 +32,13 @@ class Order:
 
 # Define user roles and menu items
 GENERAL_MENU = {
-    1: MenuItem("Burger 🍔", 5.99),
-    2: MenuItem("Pizza 🍕", 8.99),
-    3: MenuItem("Pasta 🍝", 7.49),
-    4: MenuItem("Salad 🥗", 4.99),
-    5: MenuItem("Soda 🥤", 1.99),
-    6: MenuItem("Hotdog 🌭", 3.49),
-    7: MenuItem("Fries 🍟", 2.99)
+    1: MenuItem("Бургер 🍔", 5.99),
+    2: MenuItem("Піца 🍕", 8.99),
+    3: MenuItem("Паста 🍝", 7.49),
+    4: MenuItem("Салат 🥗", 4.99),
+    5: MenuItem("Газований напій 🥤", 1.99),
+    6: MenuItem("Хот-дог 🌭", 3.49),
+    7: MenuItem("Картопля фрі 🍟", 2.99)
 }
 
 
@@ -55,24 +55,27 @@ todays_menu = {
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.message.from_user.id
     username = update.message.from_user.username
-    await update.message.reply_text(f'Hello {username}! Your user ID is {user_id}.')
-    
+    await update.message.reply_text(f'Привіт, {username}! Твій ID користувача: {user_id}.')
+
     keyboard_customer = [
-        [KeyboardButton("Show Menu")],
-        [KeyboardButton("Place Order")],
+        [KeyboardButton("Показати меню")],
+        [KeyboardButton("Зробити замовлення")],
     ]
     keyboard_staff = [
-        [KeyboardButton("Change General Menu")],
-        [KeyboardButton("Set Today's Menu")],
-        [KeyboardButton("View Orders")]
+        [KeyboardButton("Змінити загальне меню")],
+        [KeyboardButton("Встановити меню на сьогодні")],
+        [KeyboardButton("Переглянути замовлення")],
+        [KeyboardButton("Очистити замовлення")]
     ]
     keyboard_admin = [
-        [KeyboardButton("Show Menu")],
-        [KeyboardButton("Place Order")],
-        [KeyboardButton("Change General Menu")],
-        [KeyboardButton("Set Today's Menu")],
-        [KeyboardButton("View Orders")]
+        [KeyboardButton("Показати меню")],
+        [KeyboardButton("Зробити замовлення")],
+        [KeyboardButton("Змінити загальне меню")],
+        [KeyboardButton("Встановити меню на сьогодні")],
+        [KeyboardButton("Переглянути замовлення")],
+        [KeyboardButton("Очистити замовлення")]
     ]
+
     if user_id in ADMIN_USER_IDS:
         reply_markup = ReplyKeyboardMarkup(keyboard_admin, resize_keyboard=True)
     elif user_id in STAFF_USER_IDS:
@@ -81,43 +84,49 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         reply_markup = ReplyKeyboardMarkup(keyboard_customer, resize_keyboard=True)
     
     # Send a message with the custom keyboard
-    await update.message.reply_text('Welcome! Please choose an option:', reply_markup=reply_markup)
+    await update.message.reply_text('Ласкаво просимо! Будь ласка, оберіть опцію:', reply_markup=reply_markup)
+
 
 # Function to handle button clicks
 async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     text = update.message.text
     user_id = update.message.from_user.id
-       
+        
     if user_id in ADMIN_USER_IDS:
-        if text == "Show Menu":
+        if text == "Показати меню":
             await show_menu(update, context)
-        elif text == "Place Order":
+        elif text == "Зробити замовлення":
             await show_order_menu(update, context)
-        elif text ==  "Set Today's Menu":
+        elif text == "Встановити меню на сьогодні":
             await set_todays_menu(update, context)
-        elif text ==  "Change General Menu":
+        elif text == "Змінити загальне меню":
             await change_general_menu(update, context)
-        elif text ==  "View Orders":
+        elif text == "Переглянути замовлення":
             await view_orders(update, context)
+        elif text == "Очистити замовлення":
+            await clear_orders(update, context)
         else:
-            await update.message.reply_text("Invalid option. Please choose again.")
+            await update.message.reply_text("Невірна опція. Будь ласка, спробуйте ще раз.")
     elif user_id in STAFF_USER_IDS:
-        if text ==  "Set Today's Menu":
+        if text == "Встановити меню на сьогодні":
             await set_todays_menu(update, context)
-        elif text ==  "Change General Menu":
+        elif text == "Змінити загальне меню":
             await change_general_menu(update, context)
-        elif text ==  "View Orders":
+        elif text == "Переглянути замовлення":
             await view_orders(update, context)
+        elif text == "Очистити замовлення":
+            await clear_orders(update, context)
         else:
-            await update.message.reply_text("Invalid option. Please choose again.")
+            await update.message.reply_text("Невірна опція. Будь ласка, спробуйте ще раз.")
     else:
-        if text == "Show Menu":
+        if text == "Показати меню":
             await show_menu(update, context)
-        elif text == "Place Order":
+        elif text == "Зробити замовлення":
             await show_order_menu(update, context)
         else:
-            await update.message.reply_text("Invalid option. Please choose again.")
-    
+            await update.message.reply_text("Невірна опція. Будь ласка, спробуйте ще раз.")
+
+        
     
     
 
@@ -130,7 +139,6 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
                         
 
 
-
 def generate_toggle_menu(menu: dict, selected_items: dict) -> InlineKeyboardMarkup:
     keyboard = []
 
@@ -140,16 +148,15 @@ def generate_toggle_menu(menu: dict, selected_items: dict) -> InlineKeyboardMark
         button = InlineKeyboardButton(f"{emoji} {item.name}", callback_data=f"staff_{item_id}")
         keyboard.append([button])
 
-    # Add a submit button
-    keyboard.append([InlineKeyboardButton("✅ Submit Today's Menu", callback_data="staff_submit_menu")])
+    # Додати кнопку підтвердження
+    keyboard.append([InlineKeyboardButton("✅ Підтвердити меню на сьогодні", callback_data="staff_submit_menu")])
 
     return InlineKeyboardMarkup(keyboard)
 
 async def set_todays_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["menu_selection"] = {}
-    
-    await update.message.reply_text("Select items for today's menu:", reply_markup=generate_toggle_menu(GENERAL_MENU, {}))
 
+    await update.message.reply_text("Оберіть позиції для сьогоднішнього меню:", reply_markup=generate_toggle_menu(GENERAL_MENU, {}))
 
 
 async def handle_menu_toggle(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -165,11 +172,10 @@ async def handle_menu_toggle(update: Update, context: ContextTypes.DEFAULT_TYPE)
             for item_id, item_name in context.bot_data.get("general_menu", {}).items()
             if selected.get(item_id)
         }
-        
 
         context.bot_data["todays_menu"] = todays_menu
 
-        await query.edit_message_text("✅ Today's menu has been set.")
+        await query.edit_message_text("✅ Меню на сьогодні встановлено.")
         
         context.user_data["menu_selection"] = {}
         return
@@ -180,7 +186,7 @@ async def handle_menu_toggle(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     general_menu = context.bot_data.get("general_menu", {})
     await query.edit_message_text(
-        text="Select items for today's menu:",
+        text="Оберіть позиції для сьогоднішнього меню:",
         reply_markup=generate_toggle_menu(general_menu, selected)
     )
 
@@ -188,16 +194,17 @@ async def handle_menu_toggle(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 async def change_general_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🛠️ Feature coming soon: Change General Menu.")
+    await update.message.reply_text("🛠️ Незабаром: можливість змінювати загальне меню.")
 
 async def view_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    menu_text = "📜Orders\n"
+    menu_text = "📜 Замовлення\n"
     for i in range(len(context.bot_data["orders"])):
-        menu_text += f"Order#{i}: total price: {context.bot_data["orders"][i].total_price}"
+        menu_text += f"Замовлення №{i}: загальна сума: {context.bot_data['orders'][i].total_price:.2f}грн"
         for item in context.bot_data["orders"][i].items:
-            menu_text += f"\n   {item.name} - ${item.price:.2f}"
+            menu_text += f"\n   {item.name} – {item.price:.2f}грн"
     await update.message.reply_text(menu_text, parse_mode="Markdown")
     # await update.message.reply_text(context.bot_data["orders"])
+
 
 #   ____          _                            
 #  / ___|   _ ___| |_ ___  _ __ ___   ___ _ __ 
@@ -205,52 +212,62 @@ async def view_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # | |__| |_| \__ \ || (_) | | | | | |  __/ |   
 #  \____\__,_|___/\__\___/|_| |_| |_|\___|_|   
                                             
-
-# Function to display the menu (text format)
+# Функція для відображення меню (у текстовому форматі)
 async def show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.bot_data["todays_menu"] or context.bot_data["todays_menu"] == {}:
-        await update.message.reply_text("❗ Today's menu is not set yet.")
+        await update.message.reply_text("❗ Меню на сьогодні ще не встановлено.")
         return
 
-    menu_text = "📜 *Today's Menu*\n\n"
+    menu_text = "📜 *Меню на сьогодні*\n\n"
     for key, value in context.bot_data["todays_menu"].items():
         menu_text += f"{key}. {value}\n"
     await update.message.reply_text(menu_text, parse_mode="Markdown")
 
-def generate_order_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE,selected_items={}):
+def generate_order_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE, selected_items={}):
     keyboard = [
         [InlineKeyboardButton(f"{'✅' if selected_items.get(option, False) else '⬜'} {item.name}", callback_data=str(option))]
         for option, item in context.bot_data["todays_menu"].items()
     ]
-    keyboard.append([InlineKeyboardButton("✅ Confirm Order", callback_data="confirm_order")])
+    keyboard.append([InlineKeyboardButton("✅ Підтвердити замовлення", callback_data="confirm_order")])
     return InlineKeyboardMarkup(keyboard)
-
-
-# Function to show the menu items as buttons
+# Функція для показу меню як кнопок
 async def show_order_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    keyboard = generate_order_buttons(update,context)
-    await update.message.reply_text("Select options:", reply_markup=keyboard)  # Missing await
+    if not context.bot_data["todays_menu"] or context.bot_data["todays_menu"] == {}:
+        await update.message.reply_text("❗ Меню на сьогодні ще не встановлено.")
+        return
+    if update.message.from_user.id in [order.orderer_id for order in context.bot_data["orders"]]:
+        await update.message.reply_text("❗ Ви вже зробили замовлення.")
+        return
+    keyboard = generate_order_buttons(update, context)
+    await update.message.reply_text("Оберіть позиції:", reply_markup=keyboard)
+
+async def clear_orders(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Очистити всі замовлення."""
+    context.bot_data["orders"] = []
+    await update.message.reply_text("Усі замовлення було очищено.")
 
 async def order_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle menu selection."""
+    """Обробити вибір у меню."""
     query = update.callback_query
     await query.answer()
 
     selected_option = query.data
 
-    # If the user clicks "Confirm Order", call confirm_order_handler
+    # Якщо користувач натискає "Підтвердити замовлення", викликаємо confirm_order_handler
     if selected_option == "confirm_order":
         await confirm_order_handler(update, context)
         return
 
-    # Convert callback_data to int and toggle selection
+    # Перетворити callback_data на int і перемкнути вибір
     selected_option = int(selected_option)
     selected_items = context.user_data.setdefault("selected_items", {})
     selected_items[selected_option] = not selected_items.get(selected_option, False)
 
-    # Update message with new keyboard state
-    await query.edit_message_text(text="Select options:", reply_markup=generate_order_buttons(update, context, selected_items))
-
+    # Оновити повідомлення з новим станом кнопок
+    await query.edit_message_text(
+        text="Оберіть позиції:",
+        reply_markup=generate_order_buttons(update, context, selected_items)
+    )
 
 
 # Function to place an order
@@ -267,12 +284,12 @@ async def confirm_order_handler(update: Update, context: ContextTypes.DEFAULT_TY
     selected_menu_items = [context.bot_data["todays_menu"][item] for item, selected in selected_items.items() if selected]
 
     if not selected_menu_items:
-        await query.edit_message_text("⚠️ You haven't selected any items.")
+        await query.edit_message_text("⚠️ Ви не вибрали жодного пункту меню.")
     else:
         order = Order(selected_menu_items, update.effective_user.id)
         context.bot_data["orders"].append(order)
         order_summary = "\n".join([item.name for item in order.items])
-        await query.edit_message_text(f"🛒 You've selected:\n{order_summary}\nThe tottal amount is {order.total_price}\nThank you for your order! 🎉")
+        await query.edit_message_text(f"🛒 Ви вибрали:\n{order_summary}\nСума замовлення {order.total_price}\nДякую за ваше замовлення 🎉")
 
     # Clear selected items after confirming
     context.user_data["selected_items"] = {}
